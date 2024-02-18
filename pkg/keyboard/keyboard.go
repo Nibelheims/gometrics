@@ -9,6 +9,7 @@ type Keyboard struct {
 	ProductID uint16
 	UsagePage uint16
 	UsageID   uint16
+    Interface int
 	Name      string
 }
 
@@ -17,6 +18,7 @@ var Lily58 = Keyboard{
 	0xeb2d,
 	0xFF60,
 	0x0061,
+    1,
 	"Lily58",
 }
 

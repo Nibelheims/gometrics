@@ -3,7 +3,7 @@ module github.com/Nibelheims/gometrics
 go 1.22.0
 
 require (
-	github.com/karalabe/hid v1.0.0
+	github.com/karalabe/hid v1.0.1-0.20240209121748-d3b59fe37df8
 	github.com/shirou/gopsutil/v3 v3.24.1
 )
 

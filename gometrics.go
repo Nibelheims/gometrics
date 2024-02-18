@@ -10,8 +10,8 @@ import (
 )
 
 func getHID(k *keyboard.Keyboard) (*hid.DeviceInfo, error) {
-	hids := hid.Enumerate(keyboard.Lily58.VendorID, keyboard.Lily58.ProductID)
-	if hids == nil {
+	hids, err := hid.Enumerate(keyboard.Lily58.VendorID, keyboard.Lily58.ProductID)
+	if err != nil {
 		return nil, errors.New("failed to enumerate HID devices")
 	}
 	for _, hid := range hids {
@@ -20,6 +20,13 @@ func getHID(k *keyboard.Keyboard) (*hid.DeviceInfo, error) {
 			return &hid, nil
 		}
 	}
+    // on linux libusb typically do not fetch usage page and id
+    // use the interface number instead
+	for _, hid := range hids {
+        if hid.Interface == keyboard.Lily58.Interface {
+			return &hid, nil
+        }
+    }
 	return nil, errors.New("Could not find the device \"" + k.Name + "\"")
 }
 
@@ -52,6 +59,8 @@ func main() {
 		buffer := keyboard.UsageToHIDReport(u)
 		//fmt.Println(buffer)
 		keeb.Write(buffer)
+        //report := append([]byte{0x00}, buffer...)
+        //keeb.SendFeatureReport(report)
 		i++
 		if i > 10 {
 			m.Stop()
