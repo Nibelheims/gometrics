@@ -58,6 +58,7 @@ func main() {
 		for _, u := range usages {
 			fmt.Printf("%s: %f%%", u.Name, u.Percent)
 		}
+		fmt.Println()
 		buffer, err := keyboard.UsagesToHIDReport(usages)
 		if err != nil {
 			fmt.Println(err.Error())
