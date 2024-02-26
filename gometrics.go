@@ -20,13 +20,13 @@ func getHID(k *keyboard.Keyboard) (*hid.DeviceInfo, error) {
 			return &hid, nil
 		}
 	}
-    // on linux libusb typically do not fetch usage page and id
-    // use the interface number instead
+	// on linux libusb typically do not fetch usage page and id
+	// use the interface number instead
 	for _, hid := range hids {
-        if hid.Interface == keyboard.Lily58.Interface {
+		if hid.Interface == keyboard.Lily58.Interface {
 			return &hid, nil
-        }
-    }
+		}
+	}
 	return nil, errors.New("Could not find the device \"" + k.Name + "\"")
 }
 
@@ -54,13 +54,16 @@ func main() {
 	m.Run()
 
 	i := 0
-	for u := range m.C() {
-		fmt.Printf("cpu: %f%%\tmem: %f%%\n", u.CpuPercent, u.MemPercent)
-		buffer := keyboard.UsageToHIDReport(u)
-		//fmt.Println(buffer)
+	for usages := range m.C() {
+		for _, u := range usages {
+			fmt.Printf("%s: %f%%", u.Name, u.Percent)
+		}
+		buffer, err := keyboard.UsagesToHIDReport(usages)
+		if err != nil {
+			fmt.Println(err.Error())
+			continue
+		}
 		keeb.Write(buffer)
-        //report := append([]byte{0x00}, buffer...)
-        //keeb.SendFeatureReport(report)
 		i++
 		if i > 10 {
 			m.Stop()

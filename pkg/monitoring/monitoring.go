@@ -9,31 +9,32 @@ import (
 
 type (
 	Usage struct {
-		CpuPercent float64
-		MemPercent float64
-		// todo network stats
+		Name    [4]byte // up to 4 ASCII chars only, no terminal null byte
+		Percent float64
 	}
 
 	Monitor interface {
-		C() <-chan Usage
+		C() <-chan []Usage
 		Run()
 		Stop()
 	}
 
 	monitor struct {
 		ticker *time.Ticker
-		output chan Usage
+		output chan []Usage
 		quit   chan bool
 	}
 )
 
+const USAGE_SIZE int = 4 + 1
+
 func NewMonitor(msPeriod int) Monitor {
 	return &monitor{ticker: time.NewTicker(time.Duration(msPeriod) * time.Millisecond),
-		output: make(chan Usage),
+		output: make(chan []Usage),
 		quit:   make(chan bool)}
 }
 
-func (m *monitor) C() <-chan Usage {
+func (m *monitor) C() <-chan []Usage {
 	return m.output
 }
 
@@ -43,8 +44,8 @@ func (m *monitor) Run() {
 		for {
 			select {
 			case <-m.ticker.C:
-				usage := getUsage()
-				m.output <- usage
+				usages := getUsages()
+				m.output <- usages
 			case <-m.quit:
 				return
 			}
@@ -57,8 +58,12 @@ func (m *monitor) Stop() {
 	close(m.output)
 }
 
-func getUsage() Usage {
+func getUsages() []Usage {
+	// TODO add other metrics
 	p, _ := cpu.Percent(0, false)
 	m, _ := mem.VirtualMemory()
-	return Usage{CpuPercent: p[0], MemPercent: m.UsedPercent}
+	return []Usage{
+		{Name: [4]byte{'c', 'p', 'u'}, Percent: p[0]},
+		{Name: [4]byte{'m', 'e', 'm'}, Percent: m.UsedPercent},
+	}
 }
