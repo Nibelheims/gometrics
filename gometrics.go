@@ -53,7 +53,7 @@ func main() {
 	m := monitoring.NewMonitor(500)
 	m.Run()
 
-	i := 0
+	//i := 0
 	for usages := range m.C() {
 		for _, u := range usages {
 			fmt.Printf("%s: %f%%", u.Name, u.Percent)
@@ -65,9 +65,9 @@ func main() {
 			continue
 		}
 		keeb.Write(buffer)
-		i++
-		if i > 10 {
-			m.Stop()
-		}
+		//i++
+		//if i > 10 {
+		//	m.Stop()
+		//}
 	}
 }

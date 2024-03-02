@@ -9,7 +9,7 @@ import (
 
 type (
 	Usage struct {
-		Name    [4]byte // up to 4 ASCII chars only, no terminal null byte
+		Name    [4]byte // up to 4 ASCII chars only, no final null byte
 		Percent float64
 	}
 
@@ -63,7 +63,7 @@ func getUsages() []Usage {
 	p, _ := cpu.Percent(0, false)
 	m, _ := mem.VirtualMemory()
 	return []Usage{
-		{Name: [4]byte{'c', 'p', 'u'}, Percent: p[0]},
-		{Name: [4]byte{'m', 'e', 'm'}, Percent: m.UsedPercent},
+		{Name: [4]byte{'c', 'p', 'u', ' '}, Percent: p[0]},
+		{Name: [4]byte{'m', 'e', 'm', ' '}, Percent: m.UsedPercent},
 	}
 }
