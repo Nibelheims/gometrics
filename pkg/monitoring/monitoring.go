@@ -3,8 +3,8 @@ package monitoring
 import (
 	"time"
 
-	"github.com/shirou/gopsutil/v3/cpu"
-	"github.com/shirou/gopsutil/v3/mem"
+	psutilCPU "github.com/shirou/gopsutil/v3/cpu"
+	psutilMEM "github.com/shirou/gopsutil/v3/mem"
 )
 
 type (
@@ -21,6 +21,8 @@ type (
 
 	monitor struct {
 		ticker *time.Ticker
+		cpu    bool
+		mem    bool
 		output chan []Usage
 		quit   chan bool
 	}
@@ -28,8 +30,10 @@ type (
 
 const USAGE_SIZE int = 4 + 1
 
-func NewMonitor(msPeriod int) Monitor {
+func NewMonitor(msPeriod int, cpu, mem bool) Monitor {
 	return &monitor{ticker: time.NewTicker(time.Duration(msPeriod) * time.Millisecond),
+		cpu:    cpu,
+		mem:    mem,
 		output: make(chan []Usage),
 		quit:   make(chan bool)}
 }
@@ -44,8 +48,10 @@ func (m *monitor) Run() {
 		for {
 			select {
 			case <-m.ticker.C:
-				usages := getUsages()
-				m.output <- usages
+				usages := getUsages(m.cpu, m.mem)
+				if len(usages) > 1 {
+					m.output <- usages
+				}
 			case <-m.quit:
 				return
 			}
@@ -58,12 +64,16 @@ func (m *monitor) Stop() {
 	close(m.output)
 }
 
-func getUsages() []Usage {
+func getUsages(cpu, mem bool) []Usage {
 	// TODO add other metrics
-	p, _ := cpu.Percent(0, false)
-	m, _ := mem.VirtualMemory()
-	return []Usage{
-		{Name: [4]byte{'c', 'p', 'u', ' '}, Percent: p[0]},
-		{Name: [4]byte{'m', 'e', 'm', ' '}, Percent: m.UsedPercent},
+	usage := []Usage{}
+	if cpu {
+		p, _ := psutilCPU.Percent(0, false)
+		usage = append(usage, Usage{Name: [4]byte{'c', 'p', 'u', ' '}, Percent: p[0]})
 	}
+	if mem {
+		m, _ := psutilMEM.VirtualMemory()
+		usage = append(usage, Usage{Name: [4]byte{'m', 'e', 'm', ' '}, Percent: m.UsedPercent})
+	}
+	return usage
 }

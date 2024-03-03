@@ -28,7 +28,7 @@ var Lily58 = Keyboard{
 var MAGIC = []byte{0x67, 0x6F, 0x6D, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73}
 
 func UsagesToHIDReport(usages []monitoring.Usage) ([]byte, error) {
-	buffLen := len(MAGIC) + 1/*nb usages*/ + monitoring.USAGE_SIZE*len(usages)
+	buffLen := len(MAGIC) + 1 /*nb usages*/ + monitoring.USAGE_SIZE*len(usages)
 	if buffLen >= 32 /* hid report size */ {
 		return nil, errors.New("too much data to fit in one report, splitting not supported")
 	}
@@ -36,8 +36,8 @@ func UsagesToHIDReport(usages []monitoring.Usage) ([]byte, error) {
 
 	copy(b[0:len(MAGIC)], MAGIC) // every sent packet will start with this magic id
 	start := len(MAGIC)
-    b[start] = byte(len(usages))
-    start += 1
+	b[start] = byte(len(usages))
+	start += 1
 	for _, u := range usages {
 		copy(b[start:start+4], u.Name[:])
 		copy(b[start+4:start+4+1], []byte{uint8(u.Percent)})

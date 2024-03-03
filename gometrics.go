@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 
 	"github.com/Nibelheims/gometrics/pkg/keyboard"
@@ -31,6 +32,11 @@ func getHID(k *keyboard.Keyboard) (*hid.DeviceInfo, error) {
 }
 
 func main() {
+	p_verbose := flag.Bool("v", false, "verbose, displays the metrics on stdout as they are gathered")
+	p_cpu := flag.Bool("nocpu", false, "do NOT gather CPU usage")
+	p_mem := flag.Bool("nomem", false, "do NOT gather memory usage")
+	flag.Parse()
+
 	if !hid.Supported() {
 		fmt.Println("HID lib not supported on this platform, exiting")
 		return
@@ -50,15 +56,17 @@ func main() {
 	defer keeb.Close()
 	fmt.Println("Successfully opened  \"" + keyboard.Lily58.Name + "\"")
 
-	m := monitoring.NewMonitor(500)
+	m := monitoring.NewMonitor(500, !*p_cpu, !*p_mem)
 	m.Run()
 
 	//i := 0
 	for usages := range m.C() {
-		for _, u := range usages {
-			fmt.Printf("%s: %f%%", u.Name, u.Percent)
+		if *p_verbose {
+			for _, u := range usages {
+				fmt.Printf("%s: %f%%", u.Name, u.Percent)
+			}
+			fmt.Println()
 		}
-		fmt.Println()
 		buffer, err := keyboard.UsagesToHIDReport(usages)
 		if err != nil {
 			fmt.Println(err.Error())
