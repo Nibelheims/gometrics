@@ -59,7 +59,6 @@ func main() {
 	m := monitoring.NewMonitor(500, !*p_cpu, !*p_mem)
 	m.Run()
 
-	//i := 0
 	for usages := range m.C() {
 		if *p_verbose {
 			for _, u := range usages {
@@ -73,9 +72,5 @@ func main() {
 			continue
 		}
 		keeb.Write(buffer)
-		//i++
-		//if i > 10 {
-		//	m.Stop()
-		//}
 	}
 }

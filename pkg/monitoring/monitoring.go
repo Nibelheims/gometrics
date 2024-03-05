@@ -49,7 +49,7 @@ func (m *monitor) Run() {
 			select {
 			case <-m.ticker.C:
 				usages := getUsages(m.cpu, m.mem)
-				if len(usages) > 1 {
+				if len(usages) >= 1 {
 					m.output <- usages
 				}
 			case <-m.quit:
